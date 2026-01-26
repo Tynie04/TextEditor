@@ -1,0 +1,28 @@
+## --- .NET / C# ---
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docstates
+
+## --- JetBrains Rider ---
+.idea/
+*.sln.iml
+*.idea.iml
+*.DotSettings.user
+
+## --- Operating System Files ---
+.DS_Store
+Thumbs.db
+
+## --- OpenTK / Native Dependencies ---
+*.log
+
+## --- Visual Studio (fallback) ---
+.vs/
+[Tt]est[Rr]esult*/
+
+## --- Test / Coverage (future) ---
+coverage/
+coverage.*
+
