@@ -1,4 +1,8 @@
-﻿using TextEditor.Editor;
+﻿using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
+using TextEditor.Editor;
+using TextEditor.Rendering;
 
 namespace TextEditor;
 
@@ -7,7 +11,29 @@ class Program
     static void Main(string[] args)
     {
         var buffer = new TextBuffer();
-        
+
+        RunBufferTests(buffer);
+        RunCursorTests(buffer);
+        RunFileTests(buffer);
+
+        var gameSettings = GameWindowSettings.Default;
+
+        var nativeSettings = new NativeWindowSettings
+        {
+            ClientSize = new Vector2i(800, 600),
+            Title = "TextEditor",
+            
+            APIVersion = new Version(3, 3),
+            Profile = ContextProfile.Compatability
+        };
+
+        using var window = new EditorWindow(gameSettings, nativeSettings);
+        window.Run();
+
+    }
+
+    static void RunBufferTests(TextBuffer buffer)
+    {
         // INSERT CHARACTERS IN EMPTY BUFFER
         buffer.InsertChar(0, 0, 'H');
         buffer.InsertChar(0, 1, 'i');
@@ -37,11 +63,10 @@ class Program
 
         AssertEqual(buffer.GetLineCount(), 1, "Line merge count");
         AssertEqual(buffer.GetLine(0), "H", "Line merge content");
-        
-        // --------------------
-        // CURSOR TESTS
-        // --------------------
+    }
 
+    private static void RunCursorTests(TextBuffer buffer)
+    {
         var cursor = new Cursor(0, 0);
 
         // Rebuild buffer content for cursor tests
@@ -103,11 +128,10 @@ class Program
         AssertCursor(cursor, 0, 5, "MoveUp clamps correctly");
 
         Console.WriteLine("ALL CURSOR TESTS PASSED");
-        
-        // --------------------
-        // FILE SAVE / LOAD TESTS
-        // --------------------
+    }
 
+    private static void RunFileTests(TextBuffer buffer)
+    {
         string tempPath = Path.Combine(Path.GetTempPath(), "textbuffer_test.txt");
 
         // Build a buffer with multiple lines (including empty line)
@@ -151,10 +175,9 @@ class Program
 
         Console.WriteLine("FILE SAVE / LOAD TESTS PASSED");
 
-
     }
     
-    static void PrintBuffer(TextBuffer buffer, string title)
+    private static void PrintBuffer(TextBuffer buffer, string title)
     {
         Console.WriteLine($"--- {title} ---");
         for (int i = 0; i < buffer.GetLineCount(); i++)
@@ -164,13 +187,13 @@ class Program
         Console.WriteLine();
     }
 
-    static void AssertEqual(string actual, string expected, string message)
+    private static void AssertEqual(string actual, string expected, string message)
     {
         if (actual != expected)
             throw new Exception($"ASSERT FAILED: {message}\nExpected: \"{expected}\"\nActual:   \"{actual}\"");
     }
     
-    static void AssertEqual(int actual, int expected, string message)
+    private static void AssertEqual(int actual, int expected, string message)
     {
         if (actual != expected)
             throw new Exception(
@@ -178,7 +201,7 @@ class Program
             );
     }
     
-    static void AssertCursor(Cursor cursor, int expectedRow, int expectedCol, string message)
+    private static void AssertCursor(Cursor cursor, int expectedRow, int expectedCol, string message)
     {
         if (cursor.Row != expectedRow || cursor.Col != expectedCol)
         {
