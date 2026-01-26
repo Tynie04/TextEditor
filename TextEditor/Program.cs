@@ -37,6 +37,73 @@ class Program
 
         AssertEqual(buffer.GetLineCount(), 1, "Line merge count");
         AssertEqual(buffer.GetLine(0), "H", "Line merge content");
+        
+        // --------------------
+        // CURSOR TESTS
+        // --------------------
+
+        var cursor = new Cursor(0, 0);
+
+        // Rebuild buffer content for cursor tests
+        buffer = new TextBuffer();
+        buffer.InsertChar(0, 0, 'H');
+        buffer.InsertChar(0, 1, 'e');
+        buffer.InsertChar(0, 2, 'l');
+        buffer.InsertChar(0, 3, 'l');
+        buffer.InsertChar(0, 4, 'o');
+
+        buffer.InsertNewLine(0, 5);
+
+        buffer.InsertChar(1, 0, 'W');
+        buffer.InsertChar(1, 1, 'o');
+        buffer.InsertChar(1, 2, 'r');
+        buffer.InsertChar(1, 3, 'l');
+        buffer.InsertChar(1, 4, 'd');
+
+        PrintBuffer(buffer, "Buffer for cursor tests");
+
+        // Cursor starts at (0,0)
+        AssertCursor(cursor, 0, 0, "Initial cursor position");
+
+        // Move right 5 times, end of first line
+        for (int i = 0; i < 5; i++)
+            cursor.MoveRight(buffer);
+
+        AssertCursor(cursor, 0, 5, "MoveRight to end of line");
+
+        // Move right once, next line, col 0
+        cursor.MoveRight(buffer);
+        AssertCursor(cursor, 1, 0, "MoveRight wraps to next line");
+
+        // Move right 3 times
+        cursor.MoveRight(buffer);
+        cursor.MoveRight(buffer);
+        cursor.MoveRight(buffer);
+        AssertCursor(cursor, 1, 3, "MoveRight inside second line");
+
+        // Move left once
+        cursor.MoveLeft(buffer);
+        AssertCursor(cursor, 1, 2, "MoveLeft inside line");
+
+        // Move left to start of line
+        cursor.MoveLeft(buffer);
+        cursor.MoveLeft(buffer);
+        AssertCursor(cursor, 1, 0, "MoveLeft to start of line");
+
+        // Move left once more, previous line end
+        cursor.MoveLeft(buffer);
+        AssertCursor(cursor, 0, 5, "MoveLeft wraps to previous line");
+
+        // Move down, should clamp to line length
+        cursor.MoveDown(buffer);
+        AssertCursor(cursor, 1, 5, "MoveDown clamps to end of shorter line");
+
+        // Move up, should clamp again
+        cursor.MoveUp(buffer);
+        AssertCursor(cursor, 0, 5, "MoveUp clamps correctly");
+
+        Console.WriteLine("ALL CURSOR TESTS PASSED");
+
     }
     
     static void PrintBuffer(TextBuffer buffer, string title)
@@ -62,5 +129,16 @@ class Program
                 $"ASSERT FAILED: {message}\nExpected: {expected}\nActual:   {actual}"
             );
     }
-
+    
+    static void AssertCursor(Cursor cursor, int expectedRow, int expectedCol, string message)
+    {
+        if (cursor.Row != expectedRow || cursor.Col != expectedCol)
+        {
+            throw new Exception(
+                $"ASSERT FAILED: {message}\n" +
+                $"Expected: (Row={expectedRow}, Col={expectedCol})\n" +
+                $"Actual:   (Row={cursor.Row}, Col={cursor.Col})"
+            );
+        }
+    }
 }
