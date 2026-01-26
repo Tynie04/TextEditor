@@ -103,6 +103,54 @@ class Program
         AssertCursor(cursor, 0, 5, "MoveUp clamps correctly");
 
         Console.WriteLine("ALL CURSOR TESTS PASSED");
+        
+        // --------------------
+        // FILE SAVE / LOAD TESTS
+        // --------------------
+
+        string tempPath = Path.Combine(Path.GetTempPath(), "textbuffer_test.txt");
+
+        // Build a buffer with multiple lines (including empty line)
+        buffer = new TextBuffer();
+        buffer.InsertChar(0, 0, 'A');
+        buffer.InsertChar(0, 1, 'B');
+        buffer.InsertChar(0, 2, 'C');
+
+        buffer.InsertNewLine(0, 3);
+
+        buffer.InsertChar(1, 0, 'D');
+        buffer.InsertChar(1, 1, 'E');
+
+        buffer.InsertNewLine(1, 2); // create empty third line
+
+        PrintBuffer(buffer, "Original buffer before save");
+
+        // Save to file
+        buffer.SaveToFile(tempPath);
+
+        // Load into a new buffer
+        var loadedBuffer = new TextBuffer();
+        loadedBuffer.LoadFromFile(tempPath);
+
+        PrintBuffer(loadedBuffer, "Loaded buffer after save/load");
+
+        // Assertions
+        AssertEqual(loadedBuffer.GetLineCount(), buffer.GetLineCount(), "Line count after load");
+
+        for (int i = 0; i < buffer.GetLineCount(); i++)
+        {
+            AssertEqual(
+                loadedBuffer.GetLine(i),
+                buffer.GetLine(i),
+                $"Line content match at row {i}"
+            );
+        }
+
+        // Clean up temp file
+        File.Delete(tempPath);
+
+        Console.WriteLine("FILE SAVE / LOAD TESTS PASSED");
+
 
     }
     

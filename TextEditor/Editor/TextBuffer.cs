@@ -1,4 +1,4 @@
-﻿using System.Data;
+﻿using System.IO;
 
 namespace TextEditor.Editor;
 
@@ -58,5 +58,35 @@ public class TextBuffer
     public int GetLineCount()
     {
         return _lines.Count;
+    }
+
+    public void LoadFromFile(string path)
+    {
+        if (!File.Exists(path))
+        {
+            // TODO: Throw an appropriate error
+            return;
+        }
+
+        string content = File.ReadAllText(path);
+        string[] splitContent = content.Split("\n");
+        
+        _lines.Clear();
+        foreach (string line in splitContent)
+        {
+            _lines.Add(line);
+        }
+
+        if (_lines.Count == 0)
+        {
+            _lines.Add(String.Empty);
+        }
+    }
+
+    public void SaveToFile(string path)
+    {
+        string content = string.Join("\n", _lines);
+
+        File.WriteAllText(path, content);
     }
 }
