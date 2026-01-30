@@ -31,20 +31,30 @@ public class EditorWindow : GameWindow
         string vertexShaderSource = @"
             #version 330 core
             layout (location = 0) in vec2 aPosition;
+            layout (location = 1) in vec2 aTexCoord;
+
             uniform mat4 projection;
+
+            out vec2 vTexCoord;
+
             void main()
             {
+                vTexCoord = aTexCoord;
                 gl_Position = projection * vec4(aPosition, 0.0, 1.0);
             }
         ";
 
         string fragmentShaderSource = @"
             #version 330 core
+            in vec2 vTexCoord;
+
             out vec4 FragColor;
-            uniform vec3 color;
+
+            uniform sampler2D tex;
+
             void main()
             {
-                FragColor = vec4(color, 1.0);
+                FragColor = texture(tex, vTexCoord);
             }
         ";
 
@@ -76,8 +86,15 @@ public class EditorWindow : GameWindow
 
         GL.BindVertexArray(_vao);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+        int stride = 4 * sizeof(float);
+
+        // position (x, y)
+        GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, stride, 0);
         GL.EnableVertexAttribArray(0);
+
+        // texture coords (u, v)
+        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, stride, 2 * sizeof(float));
+        GL.EnableVertexAttribArray(1);
         
         Resize += OnWindowResize;
     }
@@ -113,6 +130,29 @@ public class EditorWindow : GameWindow
 
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }
+    
+    private void DrawTexturedRect(float x, float y, float width, float height, Texture texture)
+    {
+        float[] vertices =
+        {
+            // x, y, u, v
+            x, y, 0f, 0f,
+            x + width, y, 1f, 0f,
+            x + width, y + height, 1f, 1f,
+
+            x, y, 0f, 0f,
+            x + width, y + height, 1f, 1f,
+            x, y + height, 0f, 1f
+        };
+
+        GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.DynamicDraw);
+
+        texture.Bind(TextureUnit.Texture0);
+        GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "tex"), 0);
+
+        GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+    }
 
     protected override void OnRenderFrame(FrameEventArgs args)
     {
@@ -123,8 +163,11 @@ public class EditorWindow : GameWindow
         GL.UseProgram(_shaderProgram);
         GL.BindVertexArray(_vao);
 
-        DrawRect(10, 10, 100, 50, new Vector3(1.0f, 0.0f, 0.0f)); // Red rectangle
-        DrawRect(150, 100, 200, 100, new Vector3(0.0f, 1.0f, 0.0f)); // Green rectangle
+        //DrawRect(10, 10, 100, 50, new Vector3(1.0f, 0.0f, 0.0f)); // Red rectangle
+        //DrawRect(150, 100, 200, 100, new Vector3(0.0f, 1.0f, 0.0f)); // Green rectangle
+        
+        DrawTexturedRect(50, 50, 64, 64, _testTexture);
+
         
         SwapBuffers();
     }
