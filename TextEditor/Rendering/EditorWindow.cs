@@ -10,6 +10,7 @@ public class EditorWindow : GameWindow
     private int _shaderProgram;
     private int _vao;
     private int _vbo;
+    private Texture _testTexture;
 
     public EditorWindow(GameWindowSettings gameSettings, NativeWindowSettings nativeSettings)
         : base(gameSettings, nativeSettings)
@@ -19,10 +20,11 @@ public class EditorWindow : GameWindow
     protected override void OnLoad()
     {
         base.OnLoad();
+
+        Texture.LoadFromFile("test.png");
         
         GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
-        // Create shaders (just copy-paste this once and forget about it)
+        
         string vertexShaderSource = @"
             #version 330 core
             layout (location = 0) in vec2 aPosition;
@@ -118,7 +120,6 @@ public class EditorWindow : GameWindow
         GL.UseProgram(_shaderProgram);
         GL.BindVertexArray(_vao);
 
-        // Now you can draw rectangles easily!
         DrawRect(10, 10, 100, 50, new Vector3(1.0f, 0.0f, 0.0f)); // Red rectangle
         DrawRect(150, 100, 200, 100, new Vector3(0.0f, 1.0f, 0.0f)); // Green rectangle
         
