@@ -69,7 +69,7 @@ public class TextBuffer
         }
 
         string content = File.ReadAllText(path);
-        string[] splitContent = content.Split("\n");
+        string[] splitContent = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
         
         _lines.Clear();
         foreach (string line in splitContent)

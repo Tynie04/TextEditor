@@ -32,6 +32,15 @@ public class EditorWindow : GameWindow
             16);
 
         Console.WriteLine($"Font loaded: {_bitmapFont.Columns}x{_bitmapFont.Rows}");
+        
+        Glyph gA = _bitmapFont.GetGlyph('A');
+        Glyph g0 = _bitmapFont.GetGlyph('0');
+        Glyph gQ = _bitmapFont.GetGlyph('?');
+
+        Console.WriteLine($"A  : {gA.U0}, {gA.V0} -> {gA.U1}, {gA.V1}");
+        Console.WriteLine($"0  : {g0.U0}, {g0.V0} -> {g0.U1}, {g0.V1}");
+        Console.WriteLine($"?  : {gQ.U0}, {gQ.V0} -> {gQ.U1}, {gQ.V1}");
+
 
         
         GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
