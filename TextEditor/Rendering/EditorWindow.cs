@@ -11,6 +11,7 @@ public class EditorWindow : GameWindow
     private int _vao;
     private int _vbo;
     private Texture _testTexture;
+    private BitmapFont _bitmapFont;
 
     public EditorWindow(GameWindowSettings gameSettings, NativeWindowSettings nativeSettings)
         : base(gameSettings, nativeSettings)
@@ -24,7 +25,14 @@ public class EditorWindow : GameWindow
         GL.Enable(EnableCap.Blend);
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-        _testTexture = Texture.LoadFromFile("test.png");
+        _testTexture = Texture.LoadFromFile("Assets/test.png");
+        _bitmapFont = BitmapFont.Load(
+            "Assets/Fonts/unifont.bmp",
+            16,
+            16);
+
+        Console.WriteLine($"Font loaded: {_bitmapFont.Columns}x{_bitmapFont.Rows}");
+
         
         GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         

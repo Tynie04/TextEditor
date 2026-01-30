@@ -14,4 +14,15 @@
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\Fonts\unifont.bmp" />
+      <Content Include="Assets\Fonts\unifont.bmp">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Assets\test.png" />
+      <Content Include="Assets\test.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>
