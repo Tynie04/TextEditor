@@ -20,8 +20,11 @@ public class EditorWindow : GameWindow
     protected override void OnLoad()
     {
         base.OnLoad();
+        
+        GL.Enable(EnableCap.Blend);
+        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-        Texture.LoadFromFile("test.png");
+        _testTexture = Texture.LoadFromFile("test.png");
         
         GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         
