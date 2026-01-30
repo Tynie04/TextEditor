@@ -1,6 +1,8 @@
 ﻿namespace TextEditor.Rendering;
 
-public class BitmapFont
+/// <summary>
+/// Represents a bitmap-based font loaded from a texture atlas grid.
+/// </summary>
 public sealed class BitmapFont
 {
     public Texture Texture { get; }
@@ -11,7 +13,7 @@ public sealed class BitmapFont
     public int Columns { get; }
     
     public int Rows { get; }
-    
+
     private BitmapFont(
         Texture texture,
         int cellWidth,
@@ -26,6 +28,13 @@ public sealed class BitmapFont
         Rows = rows;
     }
     
+    /// <summary>
+    /// Loads a bitmap font atlas from a file and calculates grid dimensions.
+    /// </summary>
+    /// <param name="imagePath">The file path to the font texture (e.g., a PNG atlas).</param>
+    /// <param name="cellWidth">The width of a single character cell in pixels.</param>
+    /// <param name="cellHeight">The height of a single character cell in pixels.</param>
+    /// <returns>A new <see cref="BitmapFont"/> instance.</returns>
     public static BitmapFont Load(
         string imagePath,
         int cellWidth,
@@ -43,7 +52,13 @@ public sealed class BitmapFont
             columns,
             rows);
     }
-}
+    
+    /// <summary>
+    /// Calculates the UV coordinates for a specific character based on the GNU Unifont 
+    /// 256x256 grid layout (High-byte = Row, Low-byte = Column).
+    /// </summary>
+    /// <param name="c">The character to retrieve.</param>
+    /// <returns>A <see cref="Glyph"/> containing normalized UV coordinates.</returns>
     public Glyph GetGlyph(char c)
     {
         if (c < 32 || c > 126)
