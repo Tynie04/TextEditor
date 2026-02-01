@@ -144,7 +144,7 @@ public sealed class TextRenderer
     /// over glyphs. Actual glyph rendering should be delegated to
     /// <see cref="DrawGlyph"/> to keep responsibilities separated.
     /// </remarks>
-    public void DrawString(float x, float y, string text, float scale = 1.0f)
+    public void DrawString(float x, float y, string text, float scale = 1.0f, float lineSpacing = 1.0f)
     {
         float penX = x;
         float penY = y;
@@ -157,13 +157,14 @@ public sealed class TextRenderer
 
         float glyphWidth = _bitmapFont.CellWidth * scale;
         float glyphHeight = _bitmapFont.CellHeight * scale;
+        float lineAdvance = glyphHeight * lineSpacing;
 
         foreach (char c in text)
         {
             if (c == '\n')
             {
                 penX = x;
-                penY += glyphHeight;
+                penY += lineAdvance;
                 continue;
             }
 

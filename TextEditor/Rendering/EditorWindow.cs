@@ -215,9 +215,15 @@ public class EditorWindow : GameWindow
         _renderer.DrawString(300, 80, "Hello\nWorld!");
         _renderer.DrawString(300, 140, "Scaled Text", 1.5f);
         _renderer.DrawString(300, 190, "ABC 012 ?!");
+        
+        _renderer.DrawString(50, 200, "Hello\nWorld", 1.0f, 1.2f);
+        _renderer.DrawString(50, 280, "Double spaced\nText", 1.0f, 2.0f);
+        _renderer.DrawString(50, 350, "Zoomed editor", 2.0f, 1.3f);
+
+        
                   
         //_renderer.DrawTexturedRect(200, 200, 64, 64, _testTexture);
-        _renderer.DrawTexturedRect(300, 240, 200, 205, _planeTexture);
+        _renderer.DrawTexturedRect(300, 540, 200, 205, _planeTexture);
         
         SwapBuffers();
     }
