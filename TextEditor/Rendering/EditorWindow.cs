@@ -15,6 +15,7 @@ public class EditorWindow : GameWindow
     private int _vao;
     private int _vbo;
     private Texture _testTexture;
+    private Texture _planeTexture;
     private BitmapFont _bitmapFont;
 
     /// <summary>
@@ -40,6 +41,7 @@ public class EditorWindow : GameWindow
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
         _testTexture = Texture.LoadFromFile("Assets/test.png");
+        _planeTexture = Texture.LoadFromFile("Assets/transparent-plane.png");
         _bitmapFont = BitmapFont.Load(
             "Assets/Fonts/unifont.bmp",
             16,  // Cell width is 16 pixels
@@ -80,14 +82,27 @@ public class EditorWindow : GameWindow
         string fragmentShaderSource = @"
             #version 330 core
             in vec2 vTexCoord;
-
             out vec4 FragColor;
 
             uniform sampler2D tex;
+            uniform int renderMode;
 
             void main()
             {
-                FragColor = texture(tex, vTexCoord);
+                vec4 c = texture(tex, vTexCoord);
+
+                if (renderMode == 0)
+                {
+                    // Normal image: use RGBA as-is
+                    FragColor = c;
+                }
+                else
+                {
+                    // Bitmap font:
+                    // White background → transparent
+                    float alpha = 1.0 - c.r;   // assumes white background, black glyphs
+                    FragColor = vec4(0.0, 0.0, 0.0, alpha);
+                }
             }
         ";
 
@@ -204,6 +219,9 @@ public class EditorWindow : GameWindow
 
         texture.Bind(TextureUnit.Texture0);
         GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "tex"), 0);
+        
+        GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "renderMode"), 0);
+
 
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }
@@ -239,6 +257,9 @@ public class EditorWindow : GameWindow
 
         _bitmapFont.Texture.Bind(TextureUnit.Texture0);
         GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "tex"), 0);
+        
+        GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "renderMode"), 1);
+
 
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }
@@ -279,7 +300,8 @@ public class EditorWindow : GameWindow
         DrawGlyph(150, 150, '2');
         DrawGlyph(170, 150, '?');
         
-        DrawTexturedRect(200, 200, 64, 64, _testTexture);
+        //DrawTexturedRect(200, 200, 64, 64, _testTexture);
+        DrawTexturedRect(200, 200, 494, 505, _planeTexture);
         
         SwapBuffers();
     }

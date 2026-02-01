@@ -39,6 +39,8 @@ public sealed class Texture
         int height = image.Height;
 
         Console.WriteLine($"Loaded image {path} ({width}x{height})");
+        var p = image[0, 0];
+        Console.WriteLine($"BG pixel: {p.R},{p.G},{p.B},{p.A}");
 
         byte[] pixels = new byte[width * height * 4];
         image.CopyPixelDataTo(pixels);
