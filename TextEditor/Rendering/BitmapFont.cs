@@ -5,6 +5,8 @@
 /// </summary>
 public sealed class BitmapFont
 {
+    private const int ColumnLabelOffset = 32;
+    private const int RowLabelOffset = 64;
     public Texture Texture { get; }
     
     public int CellWidth { get; }
@@ -54,13 +56,16 @@ public sealed class BitmapFont
     }
     
     /// <summary>
-    /// Calculates the UV coordinates for a specific character based on the GNU Unifont 
-    /// 256x256 grid layout (High-byte = Row, Low-byte = Column).
+    /// Calculates the UV coordinates for a specific character from the GNU Unifont bitmap. 
     /// </summary>
     /// <param name="c">The character to retrieve.</param>
+    /// <example>
+    /// 'A' (0x0041) = row 0x00, column 0x41 (decimal 65) = pixel (1072, 62)
+    /// </example>
     /// <returns>A <see cref="Glyph"/> containing normalized UV coordinates.</returns>
     public Glyph GetGlyph(char c)
     {
+        // Replace unprintable characters with '?'
         if (c < 32 || c > 126)
         {
             c = '?';
@@ -68,12 +73,17 @@ public sealed class BitmapFont
 
         int codepoint = c;
 
-        int column = codepoint & 0xFF;
-        int row = codepoint >> 8;
+        // Unifont grid indexing:
+        // Row = high byte (for ASCII 0x00-0xFF, this is always 0x00)
+        // Column = low byte (the full character code 0x00-0xFF)
+        int row = (codepoint >> 8) & 0xFF;    // High byte
+        int column = codepoint & 0xFF;         // Low byte
 
-        int pixelX = column * CellWidth;
-        int pixelY = row * CellHeight;
+        // Calculate pixel position with offsets for white border + labels
+        int pixelX = ColumnLabelOffset + (column * CellWidth);
+        int pixelY = RowLabelOffset + (row * CellHeight);
 
+        // Convert to normalized UV coordinates (0.0 to 1.0)
         float u0 = (float)pixelX / Texture.Width;
         float v0 = (float)pixelY / Texture.Height;
         float u1 = (float)(pixelX + CellWidth) / Texture.Width;

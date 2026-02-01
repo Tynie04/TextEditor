@@ -42,8 +42,8 @@ public class EditorWindow : GameWindow
         _testTexture = Texture.LoadFromFile("Assets/test.png");
         _bitmapFont = BitmapFont.Load(
             "Assets/Fonts/unifont.bmp",
-            16,
-            16);
+            16,  // Cell width is 16 pixels
+            16); // Cell height is 16 pixels
 
         Console.WriteLine($"Font loaded: {_bitmapFont.Columns}x{_bitmapFont.Rows}");
         
@@ -51,9 +51,9 @@ public class EditorWindow : GameWindow
         Glyph g0 = _bitmapFont.GetGlyph('0');
         Glyph gQ = _bitmapFont.GetGlyph('?');
 
-        Console.WriteLine($"A  : {gA.U0}, {gA.V0} -> {gA.U1}, {gA.V1}");
-        Console.WriteLine($"0  : {g0.U0}, {g0.V0} -> {g0.U1}, {g0.V1}");
-        Console.WriteLine($"?  : {gQ.U0}, {gQ.V0} -> {gQ.U1}, {gQ.V1}");
+        Console.WriteLine($"A (65): U0={gA.U0:F4}, V0={gA.V0:F4} -> U1={gA.U1:F4}, V1={gA.V1:F4}");
+        Console.WriteLine($"0 (48): U0={g0.U0:F4}, V0={g0.V0:F4} -> U1={g0.U1:F4}, V1={g0.V1:F4}");
+        Console.WriteLine($"? (63): U0={gQ.U0:F4}, V0={gQ.V0:F4} -> U1={gQ.U1:F4}, V1={gQ.V1:F4}");
 
 
         
@@ -209,6 +209,41 @@ public class EditorWindow : GameWindow
     }
 
     /// <summary>
+    /// Draws a single character from the bitmap font at the specified screen position.
+    /// </summary>
+    /// <param name="x">The X screen coordinate.</param>
+    /// <param name="y">The Y screen coordinate.</param>
+    /// <param name="c">The character to draw.</param>
+    /// <param name="scale">Optional scale factor (default 1.0 for pixel-perfect rendering).</param>
+    private void DrawGlyph(float x, float y, char c, float scale = 1.0f)
+    {
+        Glyph glyph = _bitmapFont.GetGlyph(c);
+        
+        float width = _bitmapFont.CellWidth * scale;
+        float height = _bitmapFont.CellHeight * scale;
+
+        float[] vertices =
+        {
+            // x, y, u, v
+            x, y, glyph.U0, glyph.V0,
+            x + width, y, glyph.U1, glyph.V0,
+            x + width, y + height, glyph.U1, glyph.V1,
+
+            x, y, glyph.U0, glyph.V0,
+            x + width, y + height, glyph.U1, glyph.V1,
+            x, y + height, glyph.U0, glyph.V1
+        };
+
+        GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.DynamicDraw);
+
+        _bitmapFont.Texture.Bind(TextureUnit.Texture0);
+        GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "tex"), 0);
+
+        GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+    }
+
+    /// <summary>
     /// Executes every frame. Handles the clearing of the buffer and calls to drawing routines.
     /// </summary>
     /// <param name="args">Timing information for the frame.</param>
@@ -221,11 +256,30 @@ public class EditorWindow : GameWindow
         GL.UseProgram(_shaderProgram);
         GL.BindVertexArray(_vao);
 
-        //DrawRect(10, 10, 100, 50, new Vector3(1.0f, 0.0f, 0.0f)); // Red rectangle
-        //DrawRect(150, 100, 200, 100, new Vector3(0.0f, 1.0f, 0.0f)); // Green rectangle
+        // Test drawing individual characters
+        DrawGlyph(50, 50, 'H', 2.0f);
+        DrawGlyph(82, 50, 'e', 2.0f);
+        DrawGlyph(114, 50, 'l', 2.0f);
+        DrawGlyph(146, 50, 'l', 2.0f);
+        DrawGlyph(178, 50, 'o', 2.0f);
         
-        DrawTexturedRect(50, 50, 64, 64, _testTexture);
+        DrawGlyph(50, 100, 'W', 2.0f);
+        DrawGlyph(82, 100, 'o', 2.0f);
+        DrawGlyph(114, 100, 'r', 2.0f);
+        DrawGlyph(146, 100, 'l', 2.0f);
+        DrawGlyph(178, 100, 'd', 2.0f);
+        DrawGlyph(210, 100, '!', 2.0f);
 
+        // Test different characters at normal scale
+        DrawGlyph(50, 150, 'A');
+        DrawGlyph(70, 150, 'B');
+        DrawGlyph(90, 150, 'C');
+        DrawGlyph(110, 150, '0');
+        DrawGlyph(130, 150, '1');
+        DrawGlyph(150, 150, '2');
+        DrawGlyph(170, 150, '?');
+        
+        DrawTexturedRect(200, 200, 64, 64, _testTexture);
         
         SwapBuffers();
     }
