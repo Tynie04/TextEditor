@@ -1,4 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using System.Diagnostics;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
@@ -263,6 +264,64 @@ public class EditorWindow : GameWindow
 
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }
+    
+    /// <summary>
+    /// Draws a string of text at the specified screen position using the bitmap font.
+    /// </summary>
+    /// <param name="x">
+    /// The X screen coordinate (in pixels) where the text begins.
+    /// This corresponds to the left edge of the first character.
+    /// </param>
+    /// <param name="y">
+    /// The Y screen coordinate (in pixels) where the text begins.
+    /// This corresponds to the top edge of the text baseline.
+    /// </param>
+    /// <param name="text">
+    /// The string to render.
+    /// </param>
+    /// <param name="scale">
+    /// Optional scale factor applied uniformly to all glyphs.
+    /// A value of 1.0 renders pixel-perfect text.
+    /// </param>
+    /// <remarks>
+    /// This method is responsible only for positioning and iterating
+    /// over glyphs. Actual glyph rendering should be delegated to
+    /// <see cref="DrawGlyph"/> to keep responsibilities separated.
+    /// </remarks>
+    private void DrawString(float x, float y, string text, float scale = 1.0f)
+    {
+        float penX = x;
+        float penY = y;
+        
+        scale = MathF.Round(scale);
+        scale = Math.Max(scale, 1.0f);
+
+        Debug.Assert(scale % 1.0f == 0.0f, 
+            "Bitmap fonts only support integer scaling.");
+
+        
+        float glyphWidth  = _bitmapFont.CellWidth * scale;
+        float glyphHeight = _bitmapFont.CellHeight * scale;
+
+        foreach (char c in text)
+        {
+            if (c == '\n')
+            {
+                penX = x;
+                penY += glyphHeight;
+                continue;
+            }
+
+            float snappedX = MathF.Round(penX);
+            float snappedY = MathF.Round(penY);
+            
+            DrawGlyph(snappedX, snappedY, c, scale);
+            
+            penX += glyphWidth;
+        }
+        
+    }
+    
 
     /// <summary>
     /// Executes every frame. Handles the clearing of the buffer and calls to drawing routines.
@@ -300,8 +359,14 @@ public class EditorWindow : GameWindow
         DrawGlyph(150, 150, '2');
         DrawGlyph(170, 150, '?');
         
+        
+        DrawString(300, 50, "Hello");
+        DrawString(300, 80, "Hello\nWorld!");
+        DrawString(300, 140, "Scaled Text", 1.5f);
+        DrawString(300, 190, "ABC 012 ?!");
+        
         //DrawTexturedRect(200, 200, 64, 64, _testTexture);
-        DrawTexturedRect(200, 200, 494, 505, _planeTexture);
+        DrawTexturedRect(300, 240, 200, 205, _planeTexture);
         
         SwapBuffers();
     }
