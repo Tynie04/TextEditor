@@ -4,6 +4,11 @@ using OpenTK.Mathematics;
 
 namespace TextEditor.Rendering;
 
+// NOTE:
+// Rendering classes are intentionally not unit-tested.
+// Layout/math logic will be extracted for testing later.
+
+
 /// <summary>
 /// Responsible for all 2D drawing operations such as glyphs,
 /// strings, rectangles, and textured quads.
@@ -114,7 +119,15 @@ public sealed class TextRenderer
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
         GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.DynamicDraw);
 
-        _bitmapFont.Texture.Bind(TextureUnit.Texture0);
+        if (_bitmapFont.Texture is Texture glTexture)
+        {
+            glTexture.Bind(TextureUnit.Texture0);
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                "BitmapFont texture is not a GPU-backed Texture.");
+        }
         GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "tex"), 0);
         GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "renderMode"), 1);
 
@@ -176,3 +189,5 @@ public sealed class TextRenderer
         }
     }
 }
+
+// TODO: Extract layout math for testing!!!

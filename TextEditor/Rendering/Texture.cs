@@ -9,7 +9,7 @@ namespace TextEditor.Rendering;
 /// Encapsulates an OpenGL texture object, handling image loading via SixLabors.ImageSharp 
 /// and management of GPU texture resources.
 /// </summary>
-public sealed class Texture
+public sealed class Texture : ITexture
 {
     public int Handle { get; }
     public int Width { get; }

@@ -62,7 +62,7 @@ public class EditorWindow : GameWindow
 
 
         
-        GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        GL.ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         
         // Vertex Shader: Projects 2D pixel coordinates to Normalized Device Coordinates (NDC)
         string vertexShaderSource = @"
@@ -218,7 +218,7 @@ public class EditorWindow : GameWindow
         
         _renderer.DrawString(50, 200, "Hello\nWorld", 1.0f, 1.2f);
         _renderer.DrawString(50, 280, "Double spaced\nText", 1.0f, 2.0f);
-        _renderer.DrawString(50, 350, "Zoomed editor", 2.0f, 1.3f);
+        _renderer.DrawString(50, 350, "Zoomed text", 2.0f, 1.3f);
 
         
                   

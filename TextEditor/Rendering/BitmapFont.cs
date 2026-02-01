@@ -7,7 +7,7 @@ public sealed class BitmapFont
 {
     private const int ColumnLabelOffset = 32;
     private const int RowLabelOffset = 64;
-    public Texture Texture { get; }
+    public ITexture Texture { get; }
     
     public int CellWidth { get; }
     public int CellHeight { get; }
@@ -17,7 +17,7 @@ public sealed class BitmapFont
     public int Rows { get; }
 
     private BitmapFont(
-        Texture texture,
+        ITexture texture,
         int cellWidth,
         int cellHeight,
         int columns,
@@ -31,6 +31,47 @@ public sealed class BitmapFont
     }
     
     /// <summary>
+    /// Creates a <see cref="BitmapFont"/> instance for use in unit tests,
+    /// bypassing file I/O and OpenGL texture loading.
+    /// </summary>
+    /// <param name="texture">
+    /// A fake or test implementation of <see cref="ITexture"/> that provides
+    /// known width and height values for deterministic testing.
+    /// </param>
+    /// <param name="cellWidth">
+    /// The width, in pixels, of a single glyph cell within the texture atlas.
+    /// </param>
+    /// <param name="cellHeight">
+    /// The height, in pixels, of a single glyph cell within the texture atlas.
+    /// </param>
+    /// <returns>
+    /// A fully initialized <see cref="BitmapFont"/> suitable for validating
+    /// glyph-to-UV coordinate calculations in unit tests.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This factory method exists exclusively to support unit testing.
+    /// It avoids dependencies on the filesystem, image decoding libraries,
+    /// and OpenGL context initialization.
+    /// </para>
+    /// <para>
+    /// Access is restricted to test assemblies via
+    /// <see cref="System.Runtime.CompilerServices.InternalsVisibleToAttribute"/>.
+    /// </para>
+    /// </remarks>
+    internal static BitmapFont CreateForTest(
+        ITexture texture,
+        int cellWidth,
+        int cellHeight)
+    {
+        int columns = texture.Width / cellWidth;
+        int rows = texture.Height / cellHeight;
+
+        return new BitmapFont(texture, cellWidth, cellHeight, columns, rows);
+    }
+
+    
+    /// <summary>
     /// Loads a bitmap font atlas from a file and calculates grid dimensions.
     /// </summary>
     /// <param name="imagePath">The file path to the font texture (e.g., a PNG atlas).</param>
@@ -42,13 +83,14 @@ public sealed class BitmapFont
         int cellWidth,
         int cellHeight)
     {
-        Texture texture = Texture.LoadFromFile(imagePath);
+        Texture glTexture =
+            Rendering.Texture.LoadFromFile(imagePath);
 
-        int columns = texture.Width / cellWidth;
-        int rows = texture.Height / cellHeight;
+        int columns = glTexture.Width / cellWidth;
+        int rows = glTexture.Height / cellHeight;
 
         return new BitmapFont(
-            texture,
+            glTexture,
             cellWidth,
             cellHeight,
             columns,

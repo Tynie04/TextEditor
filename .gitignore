@@ -5,6 +5,10 @@ obj/
 *.userosscache
 *.sln.docstates
 
+# Ignore NuGet Packages
+packages/
+*.nupkg
+
 ## --- JetBrains Rider ---
 .idea/
 *.sln.iml
@@ -25,4 +29,3 @@ Thumbs.db
 ## --- Test / Coverage (future) ---
 coverage/
 coverage.*
-
