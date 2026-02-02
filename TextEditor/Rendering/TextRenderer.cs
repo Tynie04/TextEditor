@@ -42,23 +42,33 @@ public sealed class TextRenderer
     /// <param name="color">The RGB color of the rectangle.</param>
     public void DrawRect(float x, float y, float width, float height, Vector3 color)
     {
-        float[] vertices = {
-            x, y,
-            x + width, y,
-            x + width, y + height,
-            x, y,
-            x + width, y + height,
-            x, y + height
+        float[] vertices =
+        {
+            // x, y, u, v  (UVs unused, but required)
+            x, y, 0f, 0f,
+            x + width, y, 0f, 0f,
+            x + width, y + height, 0f, 0f,
+
+            x, y, 0f, 0f,
+            x + width, y + height, 0f, 0f,
+            x, y + height, 0f, 0f
         };
 
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.DynamicDraw);
+        GL.BufferData(
+            BufferTarget.ArrayBuffer,
+            vertices.Length * sizeof(float),
+            vertices,
+            BufferUsageHint.DynamicDraw
+        );
 
-        int colorLoc = GL.GetUniformLocation(_shaderProgram, "color");
-        GL.Uniform3(colorLoc, color);
+        // cursor is not textured
+        GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "renderMode"), 2);
+        GL.Uniform3(GL.GetUniformLocation(_shaderProgram, "color"), color);
 
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }
+
     
     /// <summary>
     /// Renders a textured rectangle (sprite) to the screen.
@@ -117,22 +127,21 @@ public sealed class TextRenderer
         };
 
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.DynamicDraw);
+        GL.BufferData(
+            BufferTarget.ArrayBuffer,
+            vertices.Length * sizeof(float),
+            vertices,
+            BufferUsageHint.DynamicDraw
+        );
 
-        if (_bitmapFont.Texture is Texture glTexture)
-        {
-            glTexture.Bind(TextureUnit.Texture0);
-        }
-        else
-        {
-            throw new InvalidOperationException(
-                "BitmapFont texture is not a GPU-backed Texture.");
-        }
+        ((Texture)_bitmapFont.Texture).Bind(TextureUnit.Texture0);
+
         GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "tex"), 0);
         GL.Uniform1(GL.GetUniformLocation(_shaderProgram, "renderMode"), 1);
 
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }
+
 
     /// <summary>
     /// Draws a string of text at the specified screen position using the bitmap font.

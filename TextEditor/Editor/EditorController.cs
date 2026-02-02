@@ -37,8 +37,6 @@ public sealed class EditorController
         {
             if (command != null) Execute(command);
         }
-        
-
     }
 
     private void Execute(EditorCommand command)

@@ -23,6 +23,11 @@ public class EditorWindow : GameWindow
     private Texture _planeTexture;
     private BitmapFont _bitmapFont;
     private TextRenderer _renderer;
+    
+    // TEMPORARY + DUMB
+    private const float TextStartX = 20f;
+    private const float TextStartY = 20f;
+    private const float TextScale = 1.0f;
 
 
     /// <summary>
@@ -95,24 +100,29 @@ public class EditorWindow : GameWindow
 
             uniform sampler2D tex;
             uniform int renderMode;
+            uniform vec3 color;
 
             void main()
             {
-                vec4 c = texture(tex, vTexCoord);
-
                 if (renderMode == 0)
                 {
-                    // Normal image: use RGBA as-is
-                    FragColor = c;
+                    // Normal textured image
+                    FragColor = texture(tex, vTexCoord);
+                }
+                else if (renderMode == 1)
+                {
+                    // Bitmap font: black glyphs on white background
+                    vec4 c = texture(tex, vTexCoord);
+                    float alpha = 1.0 - c.r; // black = visible, white = transparent
+                    FragColor = vec4(0.0, 0.0, 0.0, alpha);
                 }
                 else
                 {
-                    // Bitmap font:
-                    // White background → transparent
-                    float alpha = 1.0 - c.r;   // assumes white background, black glyphs
-                    FragColor = vec4(0.0, 0.0, 0.0, alpha);
+                    // Solid color rect (cursor)
+                    FragColor = vec4(color, 1.0);
                 }
             }
+
         ";
 
         int vertexShader = GL.CreateShader(ShaderType.VertexShader);
@@ -193,46 +203,48 @@ public class EditorWindow : GameWindow
         GL.UseProgram(_shaderProgram);
         GL.BindVertexArray(_vao);
 
-        // Test drawing individual characters
-        _renderer.DrawGlyph(50, 50, 'H', 2.0f);
-        _renderer.DrawGlyph(82, 50, 'e', 2.0f);
-        _renderer.DrawGlyph(114, 50, 'l', 2.0f);
-        _renderer.DrawGlyph(146, 50, 'l', 2.0f);
-        _renderer.DrawGlyph(178, 50, 'o', 2.0f);
+        // _renderer.DrawString(10, 10, "hello world");
+        RenderEditor();
         
-        _renderer.DrawGlyph(50, 100, 'W', 2.0f);
-        _renderer.DrawGlyph(82, 100, 'o', 2.0f);
-        _renderer.DrawGlyph(114, 100, 'r', 2.0f);
-        _renderer.DrawGlyph(146, 100, 'l', 2.0f);
-        _renderer.DrawGlyph(178, 100, 'd', 2.0f);
-        _renderer.DrawGlyph(210, 100, '!', 2.0f);
-
-        // Test different characters at normal scale
-        _renderer.DrawGlyph(50, 150, 'A');
-        _renderer.DrawGlyph(70, 150, 'B');
-        _renderer.DrawGlyph(90, 150, 'C');
-        _renderer.DrawGlyph(110, 150, '0');
-        _renderer.DrawGlyph(130, 150, '1');
-        _renderer.DrawGlyph(150, 150, '2');
-        _renderer.DrawGlyph(170, 150, '?');
-        
-        
-        _renderer.DrawString(300, 50, "Hello");
-        _renderer.DrawString(300, 80, "Hello\nWorld!");
-        _renderer.DrawString(300, 140, "Scaled Text", 1.5f);
-        _renderer.DrawString(300, 190, "ABC 012 ?!");
-        
-        _renderer.DrawString(50, 200, "Hello\nWorld", 1.0f, 1.2f);
-        _renderer.DrawString(50, 280, "Double spaced\nText", 1.0f, 2.0f);
-        _renderer.DrawString(50, 350, "Zoomed text", 2.0f, 1.3f);
-
-        
-                  
-        //_renderer.DrawTexturedRect(200, 200, 64, 64, _testTexture);
-        _renderer.DrawTexturedRect(300, 540, 200, 205, _planeTexture);
         
         SwapBuffers();
     }
+    
+    private void RenderEditor()
+    {
+        float glyphWidth  = _bitmapFont.CellWidth * TextScale;
+        float glyphHeight = _bitmapFont.CellHeight * TextScale;
+
+        for (int row = 0; row < _editor.Buffer.GetLineCount(); row++)
+        {
+            string line = _editor.Buffer.GetLine(row);
+
+            float x = TextStartX;
+            float y = TextStartY + row * glyphHeight;
+
+            _renderer.DrawString(x, y, line, TextScale);
+        }
+
+        RenderCursor(glyphWidth, glyphHeight);
+    }
+
+    private void RenderCursor(float glyphWidth, float glyphHeight)
+    {
+        Cursor cursor = _editor.Cursor;
+
+        float cursorX = TextStartX + cursor.Col * glyphWidth;
+        float cursorY = TextStartY + cursor.Row * glyphHeight;
+
+        // Simple vertical caret
+        _renderer.DrawRect(
+            cursorX,
+            cursorY,
+            2f,
+            glyphHeight,
+            new Vector3(0f, 0f, 0f)
+        );
+    }
+
     
     protected override void OnUpdateFrame(FrameEventArgs args)
     {
