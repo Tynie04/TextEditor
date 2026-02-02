@@ -27,19 +27,30 @@ public sealed class EditorController
     /// </summary>
     public void HandleRawInput(RawInputEvent input)
     {
-        // Phase 3.2: only map keys → commands
+        if (input is RawTextEvent text)
+        {
+            Execute(new InsertChar(text.Character));
+            return;
+        }
+        
         if (_keyMapper.TryMap(input, out var command))
         {
-            Execute(command);
+            if (command != null) Execute(command);
         }
+        
 
-        // RawTextEvent is intentionally ignored for now
     }
 
     private void Execute(EditorCommand command)
     {
         switch (command)
         {
+            case InsertChar insert:
+            {
+                _buffer.InsertChar(_cursor.Row, _cursor.Col, insert.Character);
+                _cursor.Col++;
+                break;
+            }
             case MoveCursorLeft:
             {
                 _cursor.MoveLeft(_buffer);
