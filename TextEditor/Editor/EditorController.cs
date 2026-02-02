@@ -1,4 +1,5 @@
-﻿using TextEditor.Commands;
+﻿using OpenTK.Platform.Windows;
+using TextEditor.Commands;
 using TextEditor.Input;
 
 namespace TextEditor.Editor;
@@ -117,17 +118,20 @@ public sealed class EditorController
             case InsertChar insert:
             {
                 _buffer.InsertChar(_cursor.Row, _cursor.Col, insert.Character);
-                _cursor.Col++;
+                _cursor.SetPosition(_cursor.Row, _cursor.Col + 1);
+                _cursor.SyncPreferredColumn();
                 break;
             }
             case MoveCursorLeft:
             {
                 _cursor.MoveLeft(_buffer);
+                _cursor.SyncPreferredColumn();
                 break;
             }
             case MoveCursorRight:
             {
                 _cursor.MoveRight(_buffer);
+                _cursor.SyncPreferredColumn();
                 break;
             }
             case MoveCursorUp:
@@ -145,7 +149,8 @@ public sealed class EditorController
                 if (_cursor.Col > 0)
                 {
                     _buffer.DeleteChar(_cursor.Row, _cursor.Col);
-                    _cursor.Col--;
+                    _cursor.SetPosition(_cursor.Row, _cursor.Col - 1);
+                    _cursor.SyncPreferredColumn();
                 }
                 else if (_cursor.Row > 0)
                 {
@@ -153,9 +158,8 @@ public sealed class EditorController
                     int newCol = _buffer.GetLine(newRow).Length;
 
                     _buffer.DeleteChar(_cursor.Row, _cursor.Col);
-
-                    _cursor.Row = newRow;
-                    _cursor.Col = newCol;
+                    _cursor.SetPosition(newRow, newCol);
+                    _cursor.SyncPreferredColumn();
                 }
 
                 break;
@@ -178,8 +182,8 @@ public sealed class EditorController
             case InsertNewLine:
             {
                 _buffer.InsertNewLine(_cursor.Row, _cursor.Col);
-                _cursor.Row++;
-                _cursor.Col = 0;
+                _cursor.SetPosition(_cursor.Row + 1, 0);
+                _cursor.SyncPreferredColumn();
                 break;
             }
         }

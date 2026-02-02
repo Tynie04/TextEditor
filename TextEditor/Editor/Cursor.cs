@@ -19,13 +19,17 @@ public struct Cursor
     {
         Row = row;
         Col = col;
+        PreferredCol = col;
     }
 
     public int Row { get; set; }
     public int Col { get; set; }
+    public int PreferredCol { get; private set; }
+
 
     /// <summary>
-    /// Moves the cursor one position to the left.
+    /// Moves the cursor one position to the left,
+    /// and updates preferred column accordingly.
     /// </summary>
     /// <param name="buffer">The <see cref="TextBuffer"/> used to calculate line wrapping.</param>
     /// <remarks>
@@ -33,23 +37,27 @@ public struct Cursor
     /// </remarks>
     public void MoveLeft(TextBuffer buffer)
     {
-        // Case 1: Move left in the same line
         if (Col > 0)
         {
             Col--;
-            return;
         }
-        
-        // Case 2: At start of line, move to end of previous line
-        if (Row > 0)
+        else if (Row > 0)
         {
             Row--;
             Col = buffer.GetLine(Row).Length;
         }
+        else
+        {
+            return;
+        }
+
+        PreferredCol = Col;
     }
 
+
     /// <summary>
-    /// Moves the cursor one position to the right.
+    /// Moves the cursor one position to the right,
+    /// and updates the preferred column accordingly.
     /// </summary>
     /// <param name="buffer">The <see cref="TextBuffer"/> used to calculate line wrapping.</param>
     /// <remarks>
@@ -57,23 +65,25 @@ public struct Cursor
     /// </remarks>
     public void MoveRight(TextBuffer buffer)
     {
-        // Case 1: Move right in the same line
         if (Col < buffer.GetLine(Row).Length)
         {
             Col++;
-            return;
         }
-        
-        // Case 2: At end of line, move to begin of next line
-        if (Row < buffer.GetLineCount() - 1)
+        else if (Row < buffer.GetLineCount() - 1)
         {
             Row++;
             Col = 0;
         }
+        else
+        {
+            return;
+        }
+
+        PreferredCol = Col;
     }
 
     /// <summary>
-    /// Moves the cursor up to the previous line.
+    /// Moves the cursor up to the previous line, while trying to preserve the preferred column.
     /// </summary>
     /// <param name="buffer">The <see cref="TextBuffer"/> used to check line lengths.</param>
     /// <remarks>
@@ -81,15 +91,19 @@ public struct Cursor
     /// </remarks>
     public void MoveUp(TextBuffer buffer)
     {
-        if (Row > 0)
+        if (Row == 0)
         {
-            Row--;
-            Col = Math.Min(Col, buffer.GetLine(Row).Length);
+            return;
         }
+        
+        Row--;
+        
+        int lineLength = buffer.GetLine(Row).Length;
+        Col = Math.Min(PreferredCol, lineLength);
     }
 
     /// <summary>
-    /// Moves the cursor down to the next line.
+    /// Moves the cursor down to the next line, while trying to preserve the preferred column.
     /// </summary>
     /// <param name="buffer">The <see cref="TextBuffer"/> used to check line lengths.</param>
     /// <remarks>
@@ -97,10 +111,37 @@ public struct Cursor
     /// </remarks>
     public void MoveDown(TextBuffer buffer)
     {
-        if (Row < buffer.GetLineCount() - 1)
+        if (Row >= buffer.GetLineCount() - 1)
         {
-            Row++;
-            Col = Math.Min(Col, buffer.GetLine(Row).Length);
+            return;
         }
+        
+        Row++;
+        
+        int lineLength = buffer.GetLine(Row).Length;
+        Col = Math.Min(PreferredCol, lineLength);
     }
+    
+    /// <summary>
+    /// Updates the cursor position explicitly and resets the preferred column.
+    /// This should be called after text insertion or deletion.
+    /// </summary>
+    /// <param name="row">The new row index.</param>
+    /// <param name="col">The new column index.</param>
+    public void SetPosition(int row, int col)
+    {
+        Row = row;
+        Col = col;
+        PreferredCol = col;
+    }
+    
+    /// <summary>
+    /// Updates the preferred column to match the current column.
+    /// This should be called after horizontal cursor movement.
+    /// </summary>
+    public void SyncPreferredColumn()
+    {
+        PreferredCol = Col;
+    }
+
 }
