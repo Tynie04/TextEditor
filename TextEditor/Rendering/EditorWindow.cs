@@ -3,6 +3,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using TextEditor.Editor;
 using TextEditor.Input;
 
 namespace TextEditor.Rendering;
@@ -18,6 +19,7 @@ public class EditorWindow : GameWindow
     private int _vbo;
     private Texture _testTexture;
     private readonly Queue<RawInputEvent> _inputQueue = new();
+    private EditorController _editor;
     private Texture _planeTexture;
     private BitmapFont _bitmapFont;
     private TextRenderer _renderer;
@@ -44,6 +46,8 @@ public class EditorWindow : GameWindow
         // Setup Alpha Blending for transparent PNG textures/fonts
         GL.Enable(EnableCap.Blend);
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+        _editor = new EditorController();
 
         _testTexture = Texture.LoadFromFile("Assets/test.png");
         _planeTexture = Texture.LoadFromFile("Assets/transparent-plane.png");
@@ -237,7 +241,7 @@ public class EditorWindow : GameWindow
         while (_inputQueue.Count > 0)
         {
             var input = _inputQueue.Dequeue();
-            Console.WriteLine($"[Queue] {input}");
+            _editor.HandleRawInput(input);
         }
     }
 
@@ -246,10 +250,10 @@ public class EditorWindow : GameWindow
     {
         base.OnKeyDown(e);
         
-        Console.WriteLine(
-            $"[KeyDown] Key={e.Key}, Modifiers={e.Modifiers}, Repeat={e.IsRepeat}"
-        );
-        
+        // Console.WriteLine(
+        //     $"[KeyDown] Key={e.Key}, Modifiers={e.Modifiers}, Repeat={e.IsRepeat}"
+        // );
+        //
         // We forward the key info
         _inputQueue.Enqueue(new RawKeyEvent(
             Key: e.Key,
@@ -262,9 +266,9 @@ public class EditorWindow : GameWindow
     {
         base.OnTextInput(e);
         
-        Console.WriteLine(
-            $"[TextInput] Char='{e.Unicode}' (U+{(int)e.Unicode:X4})"
-        );
+        // Console.WriteLine(
+        //     $"[TextInput] Char='{e.Unicode}' (U+{(int)e.Unicode:X4})"
+        // );
         
         _inputQueue.Enqueue(new RawTextEvent((char)e.Unicode));
     }
