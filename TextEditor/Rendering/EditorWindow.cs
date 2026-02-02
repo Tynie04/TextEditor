@@ -3,6 +3,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using TextEditor.Input;
 
 namespace TextEditor.Rendering;
 
@@ -16,6 +17,7 @@ public class EditorWindow : GameWindow
     private int _vao;
     private int _vbo;
     private Texture _testTexture;
+    private readonly Queue<RawInputEvent> _inputQueue = new();
     private Texture _planeTexture;
     private BitmapFont _bitmapFont;
     private TextRenderer _renderer;
@@ -226,6 +228,45 @@ public class EditorWindow : GameWindow
         _renderer.DrawTexturedRect(300, 540, 200, 205, _planeTexture);
         
         SwapBuffers();
+    }
+    
+    protected override void OnUpdateFrame(FrameEventArgs args)
+    {
+        base.OnUpdateFrame(args);
+
+        while (_inputQueue.Count > 0)
+        {
+            var input = _inputQueue.Dequeue();
+            Console.WriteLine($"[Queue] {input}");
+        }
+    }
+
+
+    protected override void OnKeyDown(KeyboardKeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        
+        Console.WriteLine(
+            $"[KeyDown] Key={e.Key}, Modifiers={e.Modifiers}, Repeat={e.IsRepeat}"
+        );
+        
+        // We forward the key info
+        _inputQueue.Enqueue(new RawKeyEvent(
+            Key: e.Key,
+            Modifiers: e.Modifiers,
+            IsRepeat: e.IsRepeat
+        ));
+    }
+
+    protected override void OnTextInput(TextInputEventArgs  e)
+    {
+        base.OnTextInput(e);
+        
+        Console.WriteLine(
+            $"[TextInput] Char='{e.Unicode}' (U+{(int)e.Unicode:X4})"
+        );
+        
+        _inputQueue.Enqueue(new RawTextEvent((char)e.Unicode));
     }
 
     /// <summary>
