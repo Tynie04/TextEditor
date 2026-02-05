@@ -139,4 +139,10 @@ public class TextBuffer
 
         File.WriteAllText(path, content);
     }
+
+    public void ClearBuffer()
+    {
+        _lines.Clear();
+        _lines.Add(string.Empty);
+    }
 }

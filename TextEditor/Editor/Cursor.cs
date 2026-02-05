@@ -143,5 +143,16 @@ public struct Cursor
     {
         PreferredCol = Col;
     }
-
+    
+    /// <summary>
+    /// Forcefully snaps the cursor to a valid position within the buffer.
+    /// Use this after an operation that might have invalidated the indices.
+    /// </summary>
+    public void Clamp(TextBuffer buffer)
+    {
+        Row = Math.Clamp(Row, 0, buffer.GetLineCount() - 1);
+        int lineLength = buffer.GetLine(Row).Length;
+        Col = Math.Clamp(Col, 0, lineLength);
+        PreferredCol = Col;
+    }
 }

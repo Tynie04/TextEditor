@@ -55,6 +55,12 @@ public sealed class KeyCommandMapper
             case Keys.O when keyEvent.Modifiers.HasFlag(KeyModifiers.Control):
                 command = new LoadCommand();
                 return true;
+
+            case Keys.N when keyEvent.Modifiers.HasFlag(KeyModifiers.Control):
+            {
+                command = new NewDocumentCommand();
+                return true;
+            }
             
             default:
                 return false;

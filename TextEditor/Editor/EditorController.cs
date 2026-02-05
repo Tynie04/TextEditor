@@ -120,99 +120,119 @@ public sealed class EditorController
     /// </param>
     private void Execute(EditorCommand command)
     {
-        switch (command)
+        int oldRow = _cursor.Row;
+        int oldCol = _cursor.Col;
+
+        try
         {
-            case InsertChar insert:
+            switch (command)
             {
-                _buffer.InsertChar(_cursor.Row, _cursor.Col, insert.Character);
-                _cursor.SetPosition(_cursor.Row, _cursor.Col + 1);
-                _cursor.SyncPreferredColumn();
-                _document.MarkDirty();
-                break;
-            }
-            case MoveCursorLeft:
-            {
-                _cursor.MoveLeft(_buffer);
-                _cursor.SyncPreferredColumn();
-                break;
-            }
-            case MoveCursorRight:
-            {
-                _cursor.MoveRight(_buffer);
-                _cursor.SyncPreferredColumn();
-                break;
-            }
-            case MoveCursorUp:
-            {
-                _cursor.MoveUp(_buffer);
-                break;
-            }
-            case MoveCursorDown:
-            {
-                _cursor.MoveDown(_buffer);
-                break;
-            }
-            case DeleteBackward:
-            {
-                if (_cursor.Col > 0)
+                case InsertChar insert:
                 {
-                    _buffer.DeleteChar(_cursor.Row, _cursor.Col);
-                    _cursor.SetPosition(_cursor.Row, _cursor.Col - 1);
+                    _buffer.InsertChar(_cursor.Row, _cursor.Col, insert.Character);
+                    _cursor.SetPosition(_cursor.Row, _cursor.Col + 1);
                     _cursor.SyncPreferredColumn();
                     _document.MarkDirty();
+                    break;
                 }
-                else if (_cursor.Row > 0)
+                case MoveCursorLeft:
                 {
-                    int newRow = _cursor.Row - 1;
-                    int newCol = _buffer.GetLine(newRow).Length;
+                    _cursor.MoveLeft(_buffer);
+                    _cursor.SyncPreferredColumn();
+                    break;
+                }
+                case MoveCursorRight:
+                {
+                    _cursor.MoveRight(_buffer);
+                    _cursor.SyncPreferredColumn();
+                    break;
+                }
+                case MoveCursorUp:
+                {
+                    _cursor.MoveUp(_buffer);
+                    break;
+                }
+                case MoveCursorDown:
+                {
+                    _cursor.MoveDown(_buffer);
+                    break;
+                }
+                case DeleteBackward:
+                {
+                    if (_cursor.Col > 0)
+                    {
+                        _buffer.DeleteChar(_cursor.Row, _cursor.Col);
+                        _cursor.SetPosition(_cursor.Row, _cursor.Col - 1);
+                        _cursor.SyncPreferredColumn();
+                        _document.MarkDirty();
+                    }
+                    else if (_cursor.Row > 0)
+                    {
+                        int newRow = _cursor.Row - 1;
+                        int newCol = _buffer.GetLine(newRow).Length;
 
-                    _buffer.DeleteChar(_cursor.Row, _cursor.Col);
-                    _cursor.SetPosition(newRow, newCol);
+                        _buffer.DeleteChar(_cursor.Row, _cursor.Col);
+                        _cursor.SetPosition(newRow, newCol);
+                        _cursor.SyncPreferredColumn();
+                        _document.MarkDirty();
+                    }
+
+                    break;
+                }
+                case DeleteForward:
+                {
+                    string line = _buffer.GetLine(_cursor.Row);
+
+                    if (_cursor.Col < line.Length)
+                    {
+                        _buffer.DeleteChar(_cursor.Row, _cursor.Col + 1);
+                        _document.MarkDirty();
+                    }
+                    else if (_cursor.Row < _buffer.GetLineCount() - 1)
+                    {
+                        _buffer.DeleteChar(_cursor.Row + 1, 0);
+                        _document.MarkDirty();
+                    }
+
+                    break;
+                }
+                case InsertNewLine:
+                {
+                    _buffer.InsertNewLine(_cursor.Row, _cursor.Col);
+                    _cursor.SetPosition(_cursor.Row + 1, 0);
                     _cursor.SyncPreferredColumn();
                     _document.MarkDirty();
+                    break;
                 }
-
-                break;
-            }
-            case DeleteForward:
-            {
-                string line = _buffer.GetLine(_cursor.Row);
-
-                if (_cursor.Col < line.Length)
+                case SaveCommand:
                 {
-                    _buffer.DeleteChar(_cursor.Row, _cursor.Col + 1);
-                    _document.MarkDirty();
+                    Save();
+                    break;
                 }
-                else if (_cursor.Row < _buffer.GetLineCount() - 1)
+                case LoadCommand:
                 {
-                    _buffer.DeleteChar(_cursor.Row + 1, 0);
-                    _document.MarkDirty();
+                    LoadFile();
+                    break;
+                }
+                case NewDocumentCommand:
+                {
+                    NewDocument();
+                    break;
                 }
 
-                break;
             }
-            case InsertNewLine:
-            {
-                _buffer.InsertNewLine(_cursor.Row, _cursor.Col);
-                _cursor.SetPosition(_cursor.Row + 1, 0);
-                _cursor.SyncPreferredColumn();
-                _document.MarkDirty();
-                break;
-            }
-            case SaveCommand:
-            {
-                Save();
-                break;
-            }
-            case LoadCommand:
-            {
-                LoadFile();
-                break;
-            }
-
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error executing {command.GetType().Name}: {ex.Message}");
+            _cursor.SetPosition(oldRow, oldCol);
+        }
+        finally
+        {
+            _cursor.Clamp(_buffer);
+            EnsureCursorVisible();
         }
 
-        EnsureCursorVisible();
     }
 
     private void Save()
@@ -253,5 +273,17 @@ public sealed class EditorController
         }
         
         _buffer.LoadFromFile(path);
+        _document.SetPath(path);
+    }
+
+    private void NewDocument()
+    {
+        if (_document.IsDirty)
+        {
+            Save();
+        }
+        
+        _buffer.ClearBuffer();
+        _document.SetPath(null);
     }
 }

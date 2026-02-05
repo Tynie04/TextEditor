@@ -10,7 +10,7 @@ public sealed class Document
     public void MarkDirty() => IsDirty = true;
     public void MarkClean() => IsDirty = false;
 
-    public void SetPath(string path)
+    public void SetPath(string? path)
     {
         FilePath = path;
         MarkClean();
