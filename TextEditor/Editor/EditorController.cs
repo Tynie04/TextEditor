@@ -1,6 +1,7 @@
 ﻿using OpenTK.Platform.Windows;
 using TextEditor.Commands;
 using TextEditor.Input;
+using TextEditor.Platform;
 
 namespace TextEditor.Editor;
 
@@ -15,6 +16,9 @@ public sealed class EditorController
     private readonly KeyCommandMapper _keyMapper;
     private Viewport _viewport;
 
+    private readonly Document _document;
+    private readonly IFileDialogService _fileDialogs;
+
     public Viewport Viewport => _viewport;
     public Cursor Cursor => _cursor;
     public TextBuffer Buffer => _buffer;
@@ -23,9 +27,12 @@ public sealed class EditorController
     /// Initializes a new editor controller with an empty buffer,
     /// a default cursor position, and an initial viewport.
     /// </summary>
-    public EditorController()
+    public EditorController(IFileDialogService fileDialogs)
     {
-        _buffer = new TextBuffer();
+        _fileDialogs = fileDialogs;
+        _document = new Document();
+
+        _buffer = _document.Buffer;
         _cursor = new Cursor(0, 0);
         _keyMapper = new KeyCommandMapper();
         _viewport = new Viewport
@@ -120,6 +127,7 @@ public sealed class EditorController
                 _buffer.InsertChar(_cursor.Row, _cursor.Col, insert.Character);
                 _cursor.SetPosition(_cursor.Row, _cursor.Col + 1);
                 _cursor.SyncPreferredColumn();
+                _document.MarkDirty();
                 break;
             }
             case MoveCursorLeft:
@@ -151,6 +159,7 @@ public sealed class EditorController
                     _buffer.DeleteChar(_cursor.Row, _cursor.Col);
                     _cursor.SetPosition(_cursor.Row, _cursor.Col - 1);
                     _cursor.SyncPreferredColumn();
+                    _document.MarkDirty();
                 }
                 else if (_cursor.Row > 0)
                 {
@@ -160,6 +169,7 @@ public sealed class EditorController
                     _buffer.DeleteChar(_cursor.Row, _cursor.Col);
                     _cursor.SetPosition(newRow, newCol);
                     _cursor.SyncPreferredColumn();
+                    _document.MarkDirty();
                 }
 
                 break;
@@ -171,10 +181,12 @@ public sealed class EditorController
                 if (_cursor.Col < line.Length)
                 {
                     _buffer.DeleteChar(_cursor.Row, _cursor.Col + 1);
+                    _document.MarkDirty();
                 }
                 else if (_cursor.Row < _buffer.GetLineCount() - 1)
                 {
                     _buffer.DeleteChar(_cursor.Row + 1, 0);
+                    _document.MarkDirty();
                 }
 
                 break;
@@ -184,10 +196,45 @@ public sealed class EditorController
                 _buffer.InsertNewLine(_cursor.Row, _cursor.Col);
                 _cursor.SetPosition(_cursor.Row + 1, 0);
                 _cursor.SyncPreferredColumn();
+                _document.MarkDirty();
                 break;
             }
+            case SaveCommand:
+            {
+                Save();
+                break;
+            }
+
         }
 
         EnsureCursorVisible();
+    }
+    
+    public void Save()
+    {
+        if (_document.FilePath == null)
+        {
+            SaveAs();
+            return;
+        }
+
+        _buffer.SaveToFile(_document.FilePath);
+        _document.MarkClean();
+    }
+
+    public void SaveAs()
+    {
+        string? path = _fileDialogs.ShowSaveFileDialog();
+        if (path == null)
+            return;
+
+        if (string.IsNullOrEmpty(Path.GetExtension(path)))
+        {
+            path += ".txt";
+        }
+
+
+        _buffer.SaveToFile(path);
+        _document.SetPath(path);
     }
 }

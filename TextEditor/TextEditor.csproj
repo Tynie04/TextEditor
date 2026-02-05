@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="NativeFileDialogSharp" Version="0.6.0-alpha" />
       <PackageReference Include="OpenTK" Version="4.9.4" />
       <PackageReference Include="OpenTK.Windowing.Common" Version="4.9.4" />
       <PackageReference Include="OpenTK.Windowing.Desktop" Version="4.9.4" />

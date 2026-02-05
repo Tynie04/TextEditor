@@ -48,6 +48,10 @@ public sealed class KeyCommandMapper
                 command = new InsertNewLine();
                 return true;
             
+            case Keys.S when keyEvent.Modifiers.HasFlag(KeyModifiers.Control):
+                command = new SaveCommand();
+                return true;
+            
             default:
                 return false;
         }

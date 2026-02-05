@@ -5,6 +5,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using TextEditor.Editor;
 using TextEditor.Input;
+using TextEditor.Platform;
 
 namespace TextEditor.Rendering;
 
@@ -36,7 +37,7 @@ public class EditorWindow : GameWindow
         GL.Enable(EnableCap.Blend);
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-        _editor = new EditorController();
+        _editor = new EditorController(new CrossPlatformFileDialogService());
 
         _bitmapFont = BitmapFont.Load(
             "Assets/Fonts/unifont.bmp",
