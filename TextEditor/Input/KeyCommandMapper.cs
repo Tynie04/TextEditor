@@ -52,6 +52,10 @@ public sealed class KeyCommandMapper
                 command = new SaveCommand();
                 return true;
             
+            case Keys.O when keyEvent.Modifiers.HasFlag(KeyModifiers.Control):
+                command = new LoadCommand();
+                return true;
+            
             default:
                 return false;
         }

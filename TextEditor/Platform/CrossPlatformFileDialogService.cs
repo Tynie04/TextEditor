@@ -5,18 +5,18 @@ namespace TextEditor.Platform;
 public sealed class CrossPlatformFileDialogService : IFileDialogService
 {
     private const string Filters =
-        "Text Files (*.txt):txt;" +
-        "Markdown (*.md):md;" +
-        "HTML (*.html):html;" +
-        "CSS (*.css):css;" +
-        "JavaScript (*.js):js;" +
-        "TypeScript (*.ts):ts;" +
-        "CSV (*.csv):csv;" +
-        "JSON (*.json):json;" +
-        "XML (*.xml):xml;" +
-        "YAML (*.yaml):yaml,yml;" +
-        "GLSL (*.glsl):glsl;" +
-        "All Files (*):*";
+        "txt;" +
+        "md;" +
+        "html;" +
+        "css;" +
+        "js;" +
+        "ts;" +
+        "csv;" +
+        "json;" +
+        "xml;" +
+        "yaml,yml;" +
+        "glsl;" +
+        "*";
 
     public string? ShowOpenFileDialog()
     {

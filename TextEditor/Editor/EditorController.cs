@@ -204,13 +204,18 @@ public sealed class EditorController
                 Save();
                 break;
             }
+            case LoadCommand:
+            {
+                LoadFile();
+                break;
+            }
 
         }
 
         EnsureCursorVisible();
     }
-    
-    public void Save()
+
+    private void Save()
     {
         if (_document.FilePath == null)
         {
@@ -222,7 +227,7 @@ public sealed class EditorController
         _document.MarkClean();
     }
 
-    public void SaveAs()
+    private void SaveAs()
     {
         string? path = _fileDialogs.ShowSaveFileDialog();
         if (path == null)
@@ -236,5 +241,17 @@ public sealed class EditorController
 
         _buffer.SaveToFile(path);
         _document.SetPath(path);
+    }
+
+    private void LoadFile()
+    {
+        string? path = _fileDialogs.ShowOpenFileDialog();
+
+        if (path == null)
+        {
+            return;
+        }
+        
+        _buffer.LoadFromFile(path);
     }
 }
