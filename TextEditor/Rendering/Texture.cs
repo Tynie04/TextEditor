@@ -42,6 +42,8 @@ public sealed class Texture : ITexture
         var p = image[0, 0];
         Console.WriteLine($"BG pixel: {p.R},{p.G},{p.B},{p.A}");
 
+        // TODO: Replace byte[] with ImageSharp's direct memory access (DangerouslyTryGetSinglePixelMemory)
+        // to avoid 85KB+ Large Object Heap (LOH) allocations and GC pressure.
         byte[] pixels = new byte[width * height * 4];
         image.CopyPixelDataTo(pixels);
         

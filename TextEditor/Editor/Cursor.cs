@@ -153,6 +153,5 @@ public struct Cursor
         Row = Math.Clamp(Row, 0, buffer.GetLineCount() - 1);
         int lineLength = buffer.GetLine(Row).Length;
         Col = Math.Clamp(Col, 0, lineLength);
-        PreferredCol = Col;
     }
 }
